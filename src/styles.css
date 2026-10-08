@@ -32,16 +32,9 @@ button { cursor: pointer; }
 }
 .login-logo { width: 58px; height: 58px; display: block; margin-bottom: 20px; }
 .login-card h1 { margin: 0; font-size: 27px; letter-spacing: -.04em; }
-.login-card p { margin: 8px 0 24px; color: var(--muted); line-height: 1.5; }
-.login-card form { display: grid; gap: 13px; }
-.login-card label { display: grid; gap: 7px; color: #4d4d4d; font-size: 13px; font-weight: 650; }
-.login-card input {
-  width: 100%; height: 46px; border: 1px solid #d9d9d9; border-radius: 11px; padding: 0 13px;
-  outline: none; background: #fff; color: #171717;
-}
-.login-card input:focus { border-color: #171717; box-shadow: 0 0 0 1px #171717; }
-.captcha-wrap { display: grid; grid-template-columns: 1fr 46px; gap: 9px; }
-.captcha-wrap img { width: 100%; height: 58px; object-fit: contain; border: 1px solid var(--border); border-radius: 11px; background: #f8f8f8; }
+.login-card p { margin: 8px 0 22px; color: var(--muted); line-height: 1.5; }
+.login-card .primary-button,
+.login-card .secondary-button { width: 100%; margin-top: 10px; }
 .icon-button, .secondary-button, .primary-button { border-radius: 11px; min-height: 46px; }
 .icon-button, .secondary-button { border: 1px solid #d9d9d9; background: #fff; color: #171717; }
 .primary-button { border: 0; background: var(--primary); color: #fff; font-weight: 720; }
@@ -92,8 +85,7 @@ button { cursor: pointer; }
   :root { color-scheme: dark; --border: #2d2d2d; --muted: #a1a1a1; --panel: #202020; --primary: #f2f2f2; }
   body, .boot-screen, .login-screen, .main-panel { background: #171717; color: #efefef; }
   .login-card { background: #1d1d1d; border-color: #303030; box-shadow: 0 24px 80px rgba(0,0,0,.38); }
-  .login-card input, .icon-button, .secondary-button, .topbar select { background: #202020; border-color: #3b3b3b; color: #f0f0f0; }
-  .login-card input:focus { border-color: #f0f0f0; box-shadow: 0 0 0 1px #f0f0f0; }
+  .icon-button, .secondary-button, .topbar select { background: #202020; border-color: #3b3b3b; color: #f0f0f0; }
   .primary-button { background: #f1f1f1; color: #111; }
   .sidebar { background: #151515; }
   .sidebar-button { color: #ddd; }
