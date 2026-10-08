@@ -24,6 +24,7 @@ const STATUS_ENDPOINTS = Object.freeze([
 ]);
 
 let mainWindow = null;
+let loginWindow = null;
 let zorixSession = null;
 const activeRequests = new Map();
 
@@ -100,104 +101,79 @@ async function getAuthStatus() {
   return { ok: true, authenticated: false, account: '', role: '' };
 }
 
-async function getCaptcha() {
-  const response = await fetchWithTimeout(`/api/zorix-auth-v365/captcha/new?t=${Date.now()}`, { method: 'GET' });
-  const data = await readJson(response);
-  if (!response.ok || !data || data.ok !== true || !data.captchaId || !data.imageUrl) {
-    return { ok: false, available: false };
+function emitAuthStatus(status) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('zorix:auth:changed', status);
   }
-
-  let image = String(data.imageUrl || '');
-  if (!image.startsWith('data:')) {
-    const imageResponse = await zorixSession.fetch(new URL(image, ZORIX_ORIGIN).toString(), {
-      credentials: 'include',
-      cache: 'no-store',
-      headers: baseHeaders({ Accept: 'image/*' })
-    });
-    if (!imageResponse.ok) return { ok: false, available: false };
-    const bytes = Buffer.from(await imageResponse.arrayBuffer());
-    const contentType = imageResponse.headers.get('content-type') || 'image/png';
-    image = `data:${contentType};base64,${bytes.toString('base64')}`;
-  }
-
-  return { ok: true, available: true, captchaId: String(data.captchaId), image };
 }
 
-async function postJson(endpoint, body, extraHeaders = {}) {
-  const response = await fetchWithTimeout(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Zorix-Login-Version': 'desktop-v1',
-      ...extraHeaders
-    },
-    body: JSON.stringify(body)
-  });
-  return { response, data: await readJson(response) || {} };
-}
-
-async function confirmSession() {
-  for (let attempt = 0; attempt < 7; attempt += 1) {
-    if (attempt) await new Promise((resolve) => setTimeout(resolve, attempt < 3 ? 180 : 320));
+async function waitForLoginSuccess(maxMs = 10 * 60 * 1000) {
+  const started = Date.now();
+  while (Date.now() - started < maxMs && loginWindow && !loginWindow.isDestroyed()) {
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     const status = await getAuthStatus();
-    if (status.authenticated) return status;
+    if (status.authenticated) {
+      emitAuthStatus(status);
+      if (loginWindow && !loginWindow.isDestroyed()) loginWindow.close();
+      return status;
+    }
   }
   return null;
 }
 
-async function login(payload) {
-  const account = String(payload?.account || '').trim();
-  const password = String(payload?.password || '');
-  const captchaId = String(payload?.captchaId || '').trim();
-  const captchaAnswer = String(payload?.captchaAnswer || '').trim().toUpperCase();
-
-  if (!account || !password) return { ok: false, error: 'Inserisci account e password.' };
-
-  try {
-    const admin = await postJson('/api/admin/login-v376', { account, password });
-    const adminOk = admin.response.ok && admin.data?.authenticated === true;
-    const notAdmin = admin.response.status === 404 && admin.data?.error === 'not_admin_account';
-
-    if (!adminOk && !notAdmin && admin.response.status !== 404) {
-      return { ok: false, error: String(admin.data?.message || admin.data?.error || 'Credenziali non valide.') };
-    }
-
-    if (!adminOk) {
-      let normal;
-      if (captchaId) {
-        if (!captchaAnswer) return { ok: false, error: 'Inserisci il codice di verifica.', refreshCaptcha: false };
-        normal = await postJson('/api/zorix-auth-v365/login', { account, password, captchaId, captchaAnswer });
-      } else {
-        normal = await postJson('/api/auth/login-v69', {
-          account,
-          username: account,
-          email: account,
-          password
-        });
-      }
-
-      const success = normal.response.ok && Boolean(
-        normal.data?.ok === true ||
-        normal.data?.authenticated === true ||
-        normal.data?.success === true ||
-        normal.data?.logged_in === true
-      );
-
-      if (!success) {
-        return {
-          ok: false,
-          error: String(normal.data?.message || normal.data?.error || normal.data?.code || 'Credenziali non valide.'),
-          refreshCaptcha: normal.data?.refreshCaptcha === true || Boolean(captchaId)
-        };
-      }
-    }
-
-    const confirmed = await confirmSession();
-    if (!confirmed) return { ok: false, error: 'Accesso riuscito, ma la sessione Zorix non è stata salvata.' };
-    return { ok: true, user: { account: confirmed.account || 'Zorix', role: confirmed.role || '' } };
-  } catch (error) {
-    return { ok: false, error: error?.message || 'Impossibile accedere a Zorix.' };
+function openLoginWindow() {
+  if (loginWindow && !loginWindow.isDestroyed()) {
+    loginWindow.focus();
+    return { ok: true };
   }
+
+  loginWindow = new BrowserWindow({
+    width: 520,
+    height: 760,
+    minWidth: 420,
+    minHeight: 620,
+    parent: mainWindow || undefined,
+    modal: false,
+    show: false,
+    title: 'Zorix Login',
+    backgroundColor: '#ffffff',
+    autoHideMenuBar: true,
+    webPreferences: {
+      session: zorixSession,
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      devTools: false
+    }
+  });
+
+  loginWindow.webContents.setWindowOpenHandler(({ url }) => {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'https:' && (parsed.hostname === 'zorix.it' || parsed.hostname.endsWith('.zorix.it'))) {
+        return { action: 'allow' };
+      }
+    } catch {}
+    return { action: 'deny' };
+  });
+
+  loginWindow.webContents.on('will-navigate', (event, url) => {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol === 'https:' && (parsed.hostname === 'zorix.it' || parsed.hostname.endsWith('.zorix.it'))) return;
+    } catch {}
+    event.preventDefault();
+  });
+
+  loginWindow.once('ready-to-show', () => loginWindow?.show());
+  loginWindow.on('closed', () => { loginWindow = null; });
+  loginWindow.loadURL(`${ZORIX_ORIGIN}/login`, {
+    userAgent: USER_AGENT,
+    extraHeaders: `Origin: ${ZORIX_ORIGIN}\nReferer: ${ZORIX_ORIGIN}/\n`
+  });
+
+  waitForLoginSuccess();
+  return { ok: true };
 }
 
 async function logout() {
@@ -207,7 +183,9 @@ async function logout() {
   try {
     await zorixSession.clearStorageData({ storages: ['cookies', 'localstorage', 'cachestorage'] });
   } catch {}
-  return { ok: true };
+  const status = { ok: true, authenticated: false, account: '', role: '' };
+  emitAuthStatus(status);
+  return status;
 }
 
 function extractText(value) {
@@ -383,8 +361,7 @@ async function startChat(sender, payload) {
 
 function registerIpc() {
   ipcMain.handle('zorix:auth:status', () => getAuthStatus());
-  ipcMain.handle('zorix:auth:captcha', () => getCaptcha());
-  ipcMain.handle('zorix:auth:login', (_event, payload) => login(payload));
+  ipcMain.handle('zorix:auth:open-login', () => openLoginWindow());
   ipcMain.handle('zorix:auth:logout', () => logout());
   ipcMain.handle('zorix:models:list', () => ({ ok: true, models: MODELS }));
   ipcMain.handle('zorix:chat:start', (event, payload) => startChat(event.sender, payload));
