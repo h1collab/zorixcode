@@ -5,9 +5,13 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('zorix', Object.freeze({
   auth: Object.freeze({
     status: () => ipcRenderer.invoke('zorix:auth:status'),
-    captcha: () => ipcRenderer.invoke('zorix:auth:captcha'),
-    login: (payload) => ipcRenderer.invoke('zorix:auth:login', payload),
-    logout: () => ipcRenderer.invoke('zorix:auth:logout')
+    openLogin: () => ipcRenderer.invoke('zorix:auth:open-login'),
+    logout: () => ipcRenderer.invoke('zorix:auth:logout'),
+    onChanged: (callback) => {
+      const handler = (_event, payload) => callback(payload);
+      ipcRenderer.on('zorix:auth:changed', handler);
+      return () => ipcRenderer.removeListener('zorix:auth:changed', handler);
+    }
   }),
   models: Object.freeze({
     list: () => ipcRenderer.invoke('zorix:models:list')
