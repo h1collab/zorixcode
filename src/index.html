@@ -13,35 +13,17 @@
     <section id="boot" class="boot-screen" aria-label="Avvio Zorix Code">
       <img class="boot-logo" src="./zorix-code-logo.svg" alt="" />
       <div class="boot-title">Zorix Code</div>
-      <div class="boot-subtitle">Connessione sicura a Zorix…</div>
+      <div class="boot-subtitle">Verifica della sessione Zorix…</div>
     </section>
 
     <section id="login" class="login-screen hidden" aria-labelledby="login-title">
       <div class="login-card">
         <img class="login-logo" src="./zorix-code-logo.svg" alt="" />
-        <h1 id="login-title">Accedi a Zorix</h1>
-        <p>È necessario un account Zorix per usare Zorix Code.</p>
-        <form id="login-form" novalidate>
-          <label>
-            <span>Account</span>
-            <input id="account" name="account" autocomplete="username" placeholder="Username o email" required />
-          </label>
-          <label>
-            <span>Password</span>
-            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Password" required />
-          </label>
-          <div id="captcha-wrap" class="captcha-wrap hidden">
-            <img id="captcha-image" alt="Codice di verifica Zorix" />
-            <button id="captcha-refresh" class="icon-button" type="button" aria-label="Nuovo codice">↻</button>
-          </div>
-          <label id="captcha-label" class="hidden">
-            <span>Codice di verifica</span>
-            <input id="captcha-answer" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Codice mostrato nell'immagine" />
-          </label>
-          <div id="login-error" class="form-error" role="alert"></div>
-          <button id="login-submit" class="primary-button" type="submit">Accedi</button>
-          <button id="register-button" class="secondary-button" type="button">Crea account Zorix</button>
-        </form>
+        <h1 id="login-title">Accedi con Zorix</h1>
+        <p>Per usare Zorix Code devi prima autenticarti sul sito ufficiale Zorix.</p>
+        <div id="login-error" class="form-error" role="alert"></div>
+        <button id="login-open" class="primary-button" type="button">Apri Zorix Login</button>
+        <button id="login-refresh" class="secondary-button" type="button">Ho già effettuato l’accesso</button>
       </div>
     </section>
 
