@@ -1,0 +1,48 @@
+{
+  "name": "zorix-code-desktop",
+  "version": "1.0.0",
+  "description": "Zorix Code desktop client",
+  "private": true,
+  "main": "electron/main.cjs",
+  "author": "Zorix",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "prepare-icons": "node scripts/make-icons.cjs",
+    "verify": "node scripts/verify-brand.cjs && node --check electron/main.cjs && node --check electron/preload.cjs && node --check src/app.js && node --check scripts/make-icons.cjs",
+    "dist:win": "npm run verify && npm run prepare-icons && electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "31.7.7",
+    "electron-builder": "24.13.3",
+    "png-to-ico": "2.1.8",
+    "sharp": "0.33.5"
+  },
+  "build": {
+    "appId": "it.zorix.code",
+    "productName": "Zorix Code",
+    "asar": true,
+    "compression": "maximum",
+    "directories": {"output": "dist"},
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "build/icon.ico",
+      "build/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": [{"target": "nsis", "arch": ["x64"]}],
+      "icon": "build/icon.ico",
+      "artifactName": "Zorix-Code-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Zorix Code",
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}
