@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Zorix Code</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell" aria-busy="true">
+    <section id="boot" class="boot-screen" aria-label="Avvio Zorix Code">
+      <img class="boot-logo" src="./zorix-code-logo.svg" alt="" />
+      <div class="boot-title">Zorix Code</div>
+      <div class="boot-subtitle">Connessione sicura a Zorix…</div>
+    </section>
+
+    <section id="login" class="login-screen hidden" aria-labelledby="login-title">
+      <div class="login-card">
+        <img class="login-logo" src="./zorix-code-logo.svg" alt="" />
+        <h1 id="login-title">Accedi a Zorix</h1>
+        <p>È necessario un account Zorix per usare Zorix Code.</p>
+        <form id="login-form" novalidate>
+          <label>
+            <span>Account</span>
+            <input id="account" name="account" autocomplete="username" placeholder="Username o email" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Password" required />
+          </label>
+          <div id="captcha-wrap" class="captcha-wrap hidden">
+            <img id="captcha-image" alt="Codice di verifica Zorix" />
+            <button id="captcha-refresh" class="icon-button" type="button" aria-label="Nuovo codice">↻</button>
+          </div>
+          <label id="captcha-label" class="hidden">
+            <span>Codice di verifica</span>
+            <input id="captcha-answer" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Codice mostrato nell'immagine" />
+          </label>
+          <div id="login-error" class="form-error" role="alert"></div>
+          <button id="login-submit" class="primary-button" type="submit">Accedi</button>
+          <button id="register-button" class="secondary-button" type="button">Crea account Zorix</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="workspace" class="workspace hidden">
+      <aside class="sidebar">
+        <div class="brand-row">
+          <img src="./zorix-code-logo.svg" class="brand-logo" alt="" />
+          <span>Zorix Code</span>
+        </div>
+        <button id="new-chat" class="sidebar-button active" type="button">＋ Nuova chat</button>
+        <div class="sidebar-section">
+          <div class="section-label">Workspace</div>
+          <button class="sidebar-button" type="button" disabled>Progetti</button>
+          <button class="sidebar-button" type="button" disabled>Esplora</button>
+        </div>
+        <div class="sidebar-spacer"></div>
+        <div id="account-summary" class="account-summary"></div>
+        <button id="logout" class="sidebar-button danger" type="button">Esci</button>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <div class="topbar-title">Zorix Code</div>
+            <div id="model-subtitle" class="topbar-subtitle">Nex Coder 4 Plutos</div>
+          </div>
+          <div class="topbar-actions">
+            <select id="model-select" aria-label="Modello Zorix"></select>
+            <select id="effort-select" aria-label="Modalità di ragionamento">
+              <option value="high">MAX</option>
+              <option value="low">FAST</option>
+            </select>
+          </div>
+        </header>
+
+        <section id="conversation" class="conversation" aria-live="polite">
+          <div id="empty-state" class="empty-state">
+            <img src="./zorix-code-logo.svg" alt="" />
+            <h2>Zorix Code</h2>
+            <p>Scrivi, programma e sviluppa con i modelli Zorix.</p>
+          </div>
+        </section>
+
+        <div class="composer-shell">
+          <form id="composer" class="composer">
+            <textarea id="message" rows="1" maxlength="50000" placeholder="Chiedi qualsiasi cosa a Zorix Code" aria-label="Messaggio"></textarea>
+            <div class="composer-footer">
+              <span id="status-text" class="status-text">Pronto</span>
+              <button id="send" class="send-button" type="submit" aria-label="Invia">↑</button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </section>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>
