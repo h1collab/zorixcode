@@ -33,8 +33,7 @@ jobs:
       - name: Build Windows installer
         shell: pwsh
         env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: npm run dist:win
 
       - name: Upload Windows installer
